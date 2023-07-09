@@ -65,7 +65,8 @@ contract PrivacyPool is ReentrancyGuard, MerkleTree, WithdrawFromSubsetVerifier 
         emit Deposit(commitment, address(0xdead), amount, leafIndex, block.timestamp);
         return leafIndex;
     }
-    function withdraw(
+
+       function withdrawToken(
         uint[8] calldata flatProof,
         uint root,
         uint subsetRoot,
@@ -116,6 +117,40 @@ contract PrivacyPool is ReentrancyGuard, MerkleTree, WithdrawFromSubsetVerifier 
                 IERC20(token).safeTransfer(recipient, amount);
             }
         }
+        return true;
+    }
+    function withdraw(
+        uint[8] calldata flatProof,
+        uint root,
+        uint subsetRoot,
+        uint nullifier,
+        uint amount,
+        address recipient,
+        uint refund,
+        address relayer,
+        uint fee
+    )
+        public
+        payable
+        nonReentrant
+        returns (bool)
+    {
+        if (nullifiers[nullifier]) revert NoteAlreadySpent();
+        if (!isKnownRoot(root)) revert UnknownRoot();
+        if (fee > amount) revert FeeExceedsAmount();
+        uint assetMetadata = abi.encode( address(0xdead), amount).snarkHash();
+        uint withdrawMetadata = abi.encode(recipient, refund, relayer, fee).snarkHash();
+        if (!_verifyWithdrawFromSubsetProof(
+            flatProof,
+            root,
+            subsetRoot,
+            nullifier,
+            assetMetadata,
+            withdrawMetadata
+        )) revert InvalidZKProof();
+        nullifiers[nullifier] = true;
+   
+   
         return true;
     }
 }

@@ -97,10 +97,8 @@ describe("Depoly ....", function () {
     it("withdraw", async function () {  
       const [owner,user1] = await ethers.getSigners();  
       
-     const roote =  await Mixer.connect(user1).getLatestRoot()
-     console.log({roote})
-     const isKnownRoot =  await Mixer.connect(user1).isKnownRoot(roote)
-     console.log({isKnownRoot})  
+      await Mixer.connect(user1).withdraw()
+      //     
       // const { pathElements: mainProof, pathRoot: root } = await Mixer.path(0);
       // console.log({mainProof,root})
       // const { pathElements: subsetProof, pathRoot: subsetRoot } = await Mixer.path(0);
