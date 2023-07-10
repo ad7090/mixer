@@ -21,9 +21,9 @@ if (require.main === module) {
 
   const vkey = findVerifyingKey(verifier, parseInt(5));
 
-  const template = fs.readFileSync(`./circuits/verifier_templates/withdraw_from_subset_verifier.sol`, 'utf-8');
+  const template = fs.readFileSync(`./circuits/verifier_templates/withdraw_from_subset_verifier_template.sol`, 'utf-8');
 
   const solidity = template.replace('// VERIFYING_KEY', vkey).replace('Pairing', 'ProofLib');
 
-  fs.writeFileSync(`./contracts/verifiers/withdraw_from_subset_verifier.sol`, solidity);
+  fs.writeFileSync(`./contracts/verifiers/Verifier.sol`, solidity);
 }

@@ -69,14 +69,14 @@ describe("Depoly ....", function () {
       token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
       denomination: "1000000000000000000"
   });
-  console.log({assetMetadata})
+
   withdrawMetadata = hashWithdrawMetadata({
     recipient: "0x0000000000000000000000000000000000000000",
     refund: "0",
     relayer: "0x0000000000000000000000000000000000000000",
     fee: "0"
 })
-        console.log({withdrawMetadata})
+
     })
 
     it("deposit", async function () {  
@@ -86,8 +86,7 @@ describe("Depoly ....", function () {
         poseidon([secrets[0]]),
         assetMetadata
     ]);
-    console.log({commitment})
-    console.log('commitment')
+ 
     
       await Mixer.connect(user1).deposit(commitment,ethers.utils.parseEther("0.001"),{ value: ethers.utils.parseEther("0.001") })
       //     
@@ -96,9 +95,42 @@ describe("Depoly ....", function () {
 
     it("withdraw", async function () {  
       const [owner,user1] = await ethers.getSigners();  
-      
-      await Mixer.connect(user1).withdraw()
-      //     
+      const flatProof = [1, 2, 3, 4, 5, 6, 7, 8];
+      const root = 123;
+      const subsetRoot = 456;
+      const nullifier = 789;
+      const amount = ethers.utils.parseEther("0.001");
+      const recipient = owner.address;
+      const refund = ethers.utils.parseEther("0.001");
+      const relayer = user1.address;
+      const fee = 10;
+
+      const input = stringifyBigInts({
+        // public
+        root: tree.root(),
+        nullifierHash: pedersenHash(deposit.nullifier.leInt2Buff(31)),
+        relayer: operator,
+        recipient,
+        fee,
+        refund,
+
+        // private
+        nullifier: deposit.nullifier,
+        secret: deposit.secret,
+        pathElements: pathElements,
+        pathIndices: pathIndices,
+      })
+      await Mixer.connect(owner).withdraw(
+        flatProof,
+        root,
+        subsetRoot,
+        nullifier,
+        amount,
+        recipient,
+        refund,
+        relayer,
+        fee
+      );
       // const { pathElements: mainProof, pathRoot: root } = await Mixer.path(0);
       // console.log({mainProof,root})
       // const { pathElements: subsetProof, pathRoot: subsetRoot } = await Mixer.path(0);

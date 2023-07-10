@@ -1,6 +1,8 @@
 circom withdraw_from_subsets.circom --r1cs --wasm --sym -o out
 
-snarkjs g16s circuits/out/withdraw_from_subset.r1cs powers_of_tau/powersOfTau28_hez_final_20.ptau circuits/out/withdraw_from_subset_0000.zkey
+// download  = >  https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_$TAU.ptau
+
+snarkjs g16s circuits/out/withdraw_from_subset.r1cs powers_of_tau/powersOfTau28_hez_final_14.ptau circuits/out/withdraw_from_subset_0000.zkey
 
 snarkjs zkc circuits/out/withdraw_from_subset_0000.zkey circuits/out/withdraw_from_subset_final.zkey -v -e='vitaliks simple mixer'
 
