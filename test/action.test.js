@@ -54,6 +54,7 @@ describe("Depoly ....", function () {
     const abi = poseidonContract.generateABI(2);
     const bytecode = poseidonContract.createCode(2);
     const poseidon = await deployBytes("Poseidon", abi, bytecode);
+    
  
     const MixerD = await ethers.getContractFactory("PrivacyPool");
      Mixer = await MixerD.deploy(
@@ -86,40 +87,49 @@ describe("Depoly ....", function () {
         poseidon([secrets[0]]),
         assetMetadata
     ]);
- 
+ const cc = '0x1a6b2b93234f1443e225dfd78ef12a69ad417fde36a5a5de1dee3982b5e89197'
     
-      await Mixer.connect(user1).deposit(commitment,ethers.utils.parseEther("0.001"),{ value: ethers.utils.parseEther("0.001") })
+      await Mixer.connect(user1).deposit(cc,ethers.utils.parseEther("0.001"),{ value: ethers.utils.parseEther("0.001") })
       //     
-      await new Promise(resolve => setTimeout(resolve, 30000));
+      // await new Promise(resolve => setTimeout(resolve, 30000));
     })
 
     it("withdraw", async function () {  
       const [owner,user1] = await ethers.getSigners();  
-      const flatProof = [1, 2, 3, 4, 5, 6, 7, 8];
-      const root = 123;
-      const subsetRoot = 456;
-      const nullifier = 789;
+      const flatProof =  [
+        "14209217016923047828107835983043022916090572012217426330941662632755282188868",
+        "15844444060520159779306725474302741194414595661729738698820449493791550185732",
+        "7080187966657916429883257096801722254477772629979200666889439447760863457592",
+        "647851111942300931236125842033296955755212431327804025638752837159365632474",
+        "13267187315971186894512379249755856050451113974106127598022892026461973160043",
+        "14304956504448971074207884073704026090868830722549950800787908376031638225170",
+        "18428694561508659550309133983026496172458136309046810150677068496377087404854",
+        "7549593068793521274526954431399981253129233917995492368918352811235103928096"
+      ];
+      const root =await Mixer.getLatestRoot()// "0x1796d9a6880e408a93593de6fb7e00c87708f7180999761bfea12a8652349411";
+      const subsetRoot = "0x1d6b8df358acfb40140e921985f70bf4ac79c1460680b29d510866eeae0425a8";
+      const nullifier = "0x2f76c9a28db71edb7fbdcb7d013b7a7868a34f5be5212304ae9f40d772459e0b";
       const amount = ethers.utils.parseEther("0.001");
       const recipient = owner.address;
-      const refund = ethers.utils.parseEther("0.001");
-      const relayer = user1.address;
+      // const refund = ethers.utils.parseEther("0.001");
+      const relayer = "0x000000000000000000000000000000000000dEaD";
       const fee = 10;
+console.log(root)
+      // const input = stringifyBigInts({
+      //   // public
+      //   root: tree.root(),
+      //   nullifierHash: pedersenHash(deposit.nullifier.leInt2Buff(31)),
+      //   relayer: operator,
+      //   recipient,
+      //   fee,
+      //   refund,
 
-      const input = stringifyBigInts({
-        // public
-        root: tree.root(),
-        nullifierHash: pedersenHash(deposit.nullifier.leInt2Buff(31)),
-        relayer: operator,
-        recipient,
-        fee,
-        refund,
-
-        // private
-        nullifier: deposit.nullifier,
-        secret: deposit.secret,
-        pathElements: pathElements,
-        pathIndices: pathIndices,
-      })
+      //   // private
+      //   nullifier: deposit.nullifier,
+      //   secret: deposit.secret,
+      //   pathElements: pathElements,
+      //   pathIndices: pathIndices,
+      // })
       await Mixer.connect(owner).withdraw(
         flatProof,
         root,
@@ -127,7 +137,7 @@ describe("Depoly ....", function () {
         nullifier,
         amount,
         recipient,
-        refund,
+        // refund,
         relayer,
         fee
       );

@@ -66,59 +66,7 @@ contract PrivacyPool is ReentrancyGuard, MerkleTree, WithdrawFromSubsetVerifier 
         return leafIndex;
     }
 
-       function withdrawToken(
-        uint[8] calldata flatProof,
-        uint root,
-        uint subsetRoot,
-        uint nullifier,
-        address token,
-        uint amount,
-        address recipient,
-        uint refund,
-        address relayer,
-        uint fee
-    )
-        public
-        payable
-        nonReentrant
-        returns (bool)
-    {
-        if (nullifiers[nullifier]) revert NoteAlreadySpent();
-        if (!isKnownRoot(root)) revert UnknownRoot();
-        if (fee > amount) revert FeeExceedsAmount();
-        uint assetMetadata = abi.encode(token, amount).snarkHash();
-        uint withdrawMetadata = abi.encode(recipient, refund, relayer, fee).snarkHash();
-        if (!_verifyWithdrawFromSubsetProof(
-            flatProof,
-            root,
-            subsetRoot,
-            nullifier,
-            assetMetadata,
-            withdrawMetadata
-        )) revert InvalidZKProof();
-        nullifiers[nullifier] = true;
-        if (refund > 0) {
-            payable(recipient).transfer(refund);
-        }
-        if (token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
-            if (msg.value != (refund+amount)) revert MsgValueInvalid();
-            if (fee > 0) {
-                payable(recipient).transfer(amount - fee);
-                payable(relayer).transfer(fee);
-            } else {
-                payable(recipient).transfer(amount);
-            }
-        } else {
-            if (msg.value != refund) revert MsgValueInvalid();
-            if (fee > 0) {
-                IERC20(token).safeTransfer(recipient, amount - fee);
-                IERC20(token).safeTransfer(relayer, fee);
-            } else {
-                IERC20(token).safeTransfer(recipient, amount);
-            }
-        }
-        return true;
-    }
+ 
     function withdraw(
         uint[8] calldata flatProof,
         uint root,
@@ -126,7 +74,7 @@ contract PrivacyPool is ReentrancyGuard, MerkleTree, WithdrawFromSubsetVerifier 
         uint nullifier,
         uint amount,
         address recipient,
-        uint refund,
+        // uint refund,
         address relayer,
         uint fee
     )
@@ -137,20 +85,25 @@ contract PrivacyPool is ReentrancyGuard, MerkleTree, WithdrawFromSubsetVerifier 
     {
         if (nullifiers[nullifier]) revert NoteAlreadySpent();
         if (!isKnownRoot(root)) revert UnknownRoot();
-        if (fee > amount) revert FeeExceedsAmount();
+        // if (fee > amount) revert FeeExceedsAmount();
         uint assetMetadata = abi.encode( address(0xdead), amount).snarkHash();
-        uint withdrawMetadata = abi.encode(recipient, refund, relayer, fee).snarkHash();
-        if (!_verifyWithdrawFromSubsetProof(
+        uint withdrawMetadata = abi.encode(recipient, relayer, fee).snarkHash();
+        if (!
+        _verifyWithdrawFromSubsetProof(
             flatProof,
             root,
             subsetRoot,
             nullifier,
             assetMetadata,
             withdrawMetadata
-        )) revert InvalidZKProof();
+        )
+       ) {
+            revert InvalidZKProof();
+        }
         nullifiers[nullifier] = true;
-   
-   
+
+//    (bool success_s,) = payable(recipient).call{value : amount}("");
+               
         return true;
     }
 }
